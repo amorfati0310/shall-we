@@ -4,7 +4,7 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android", 
+    "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "biome lint .",
@@ -13,10 +13,16 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~5.0.4",
     "expo": "~53.0.22",
     "expo-status-bar": "~2.2.3",
+    "nativewind": "^4.1.23",
     "react": "19.0.0",
-    "react-native": "0.79.6"
+    "react-dom": "19.0.0",
+    "react-native": "0.79.6",
+    "react-native-reanimated": "~3.17.4",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-web": "^0.20.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -24,10 +30,14 @@
     "@types/react": "~19.0.10",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.5",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tailwindcss": "~3.4.17",
     "typescript": "~5.8.3"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
+    "*.{ts,tsx,js,jsx,json,md}": [
+      "biome format --write",
+      "biome lint --write",
       "biome check --write"
     ]
   },

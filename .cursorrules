@@ -1,0 +1,192 @@
+# Shall We? - 라틴댄스 소셜 매칭 앱 개발 규칙
+
+## 📱 프로젝트 컨텍스트
+- **프레임워크**: React Native + Expo (TypeScript)
+- **UI 라이브러리**: React Native Reusables + NativeWind
+- **상태 관리**: Zustand + React Query
+- **개발 도구**: Biome (ESLint + Prettier 통합)
+- **패키지 매니저**: pnpm
+- **목표**: MVP 빠른 개발, 라틴댄스 매칭 앱
+
+## 🎯 코드 작성 원칙
+
+### React Native 베스트 프랙티스
+- 항상 TypeScript 사용, `any` 타입 지양
+- 컴포넌트는 함수형으로 작성 (React.FC 사용)
+- Expo에서 제공하는 모듈 우선 사용
+- Platform-specific 코드는 `Platform.OS` 활용
+- SafeAreaView, StatusBar 항상 고려
+
+### 파일 구조 및 네이밍
+```
+/src
+  /components     # 재사용 컴포넌트
+    /ui          # React Native Reusables 컴포넌트
+  /screens        # 화면 컴포넌트
+  /navigation     # 네비게이션 구조
+  /store          # Zustand 스토어
+  /api            # React Query hooks
+  /utils          # 유틸리티 함수
+  /types          # TypeScript 타입 정의
+```
+
+- 파일명: PascalCase (컴포넌트), camelCase (유틸)
+- 컴포넌트: `ComponentName.tsx`
+- 스크린: `ScreenName.tsx` 
+- 타입: `types.ts`, `api.types.ts`
+
+### React Native 컴포넌트 스타일
+```typescript
+// ✅ 좋은 예
+import type React from 'react'
+import { View, Text } from 'react-native'
+import { cn } from '~/lib/utils'
+
+interface ButtonProps {
+  title: string
+  onPress: () => void
+  variant?: 'primary' | 'secondary'
+  disabled?: boolean
+}
+
+export const Button: React.FC<ButtonProps> = ({ 
+  title, 
+  onPress, 
+  variant = 'primary',
+  disabled = false 
+}) => {
+  return (
+    <Pressable 
+      onPress={onPress}
+      disabled={disabled}
+      className={cn(
+        'px-4 py-2 rounded-lg',
+        variant === 'primary' ? 'bg-blue-500' : 'bg-gray-500',
+        disabled && 'opacity-50'
+      )}
+    >
+      <Text className="text-white font-medium">{title}</Text>
+    </Pressable>
+  )
+}
+```
+
+### NativeWind 스타일링 가이드
+- Tailwind 클래스 우선 사용
+- `className` prop 활용
+- 복잡한 스타일은 `cn()` 유틸 함수로 조건부 처리
+- 플랫폼별 스타일: `ios:bg-blue-500 android:bg-red-500`
+
+### 상태 관리 패턴
+```typescript
+// Zustand 스토어 예시
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+interface UserStore {
+  user: User | null
+  isAuthenticated: boolean
+  login: (user: User) => void
+  logout: () => void
+}
+
+export const useUserStore = create<UserStore>()(
+  persist(
+    (set) => ({
+      user: null,
+      isAuthenticated: false,
+      login: (user) => set({ user, isAuthenticated: true }),
+      logout: () => set({ user: null, isAuthenticated: false })
+    }),
+    { name: 'user-storage' }
+  )
+)
+```
+
+### API 호출 패턴 (React Query)
+```typescript
+// API 호출 hooks
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { api } from '~/lib/api'
+
+export const useParties = () => {
+  return useQuery({
+    queryKey: ['parties'],
+    queryFn: () => api.get('parties').json<Party[]>()
+  })
+}
+
+export const useCreateParty = () => {
+  return useMutation({
+    mutationFn: (data: CreatePartyData) => 
+      api.post('parties', { json: data }).json<Party>()
+  })
+}
+```
+
+### 네비게이션 패턴
+- React Navigation v6 사용
+- 타입 안전한 네비게이션 파라미터 정의
+- Stack, Tab, Drawer 네비게이션 적절히 조합
+
+## 🚫 피해야 할 패턴
+- `StyleSheet.create()` 대신 NativeWind 사용
+- inline styles 지양
+- 복잡한 로직을 컴포넌트에 직접 작성
+- any 타입 사용
+- 직접 fetch() 호출 (React Query + ky 사용)
+
+## 📚 라틴댄스 앱 특화 가이드
+
+### 도메인 모델
+```typescript
+interface User {
+  id: string
+  username: string
+  profile: UserProfile
+  danceLevel: 'beginner' | 'intermediate' | 'advanced'
+  preferredGenres: DanceGenre[]
+  location: Location
+}
+
+interface Party {
+  id: string
+  title: string
+  hostId: string
+  datetime: Date
+  venue: Venue
+  maxParticipants: number
+  currentParticipants: User[]
+  requiredLevel: DanceLevel
+  genres: DanceGenre[]
+}
+
+type DanceGenre = 'salsa' | 'bachata' | 'kizomba' | 'merengue'
+```
+
+### UX 고려사항
+- 매칭 결과는 즉시 피드백 제공
+- 위치 기반 서비스 권한 요청 UX
+- 카카오톡 연동 플로우 명확히 안내
+- 오프라인 상황 대응 (로딩, 에러 상태)
+
+## 🔧 개발 워크플로우
+1. 기능 구현 전 타입 정의
+2. 컴포넌트 구현
+3. `pnpm check` 실행 (Biome)
+4. 테스트 (시뮬레이터에서 확인)
+5. 커밋 (Conventional Commits)
+
+## 📱 성능 최적화
+- FlatList 사용 (긴 리스트)
+- useMemo, useCallback 적절히 활용
+- 이미지 최적화 (expo-image 사용)
+- 번들 크기 모니터링
+
+## 🎨 디자인 시스템
+- 일관된 컬러 팔레트 (라틴댄스 분위기)
+- Typography 규칙 정의
+- 컴포넌트 재사용성 고려
+- Accessibility (접근성) 준수
+
+모든 코드는 이 규칙을 따라 작성하고, MVP 빠른 개발을 목표로 합니다.
