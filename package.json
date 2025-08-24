@@ -1,0 +1,35 @@
+{
+  "name": "shall-we",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android", 
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "biome lint .",
+    "format": "biome format . --write",
+    "check": "biome check . --write",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "expo": "~53.0.22",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-native": "0.79.6"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@biomejs/biome": "^2.2.2",
+    "@types/react": "~19.0.10",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
+    "typescript": "~5.8.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "biome check --write"
+    ]
+  },
+  "private": true
+}
